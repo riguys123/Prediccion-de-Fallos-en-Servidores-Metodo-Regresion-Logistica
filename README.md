@@ -1,134 +1,137 @@
-# 🖥️ Predicción de Fallos en Servidores — Regresión Logística
+# Prediccion de Fallos en Servidores
+### Metodo: Regresion Logistica
 
-Proyecto desarrollado para la asignatura **Métodos Numéricos (MAT205)** —
-Universidad San Francisco Xavier de Chuquisaca.
+**Materia:** Metodos Numericos  
+**Universidad:** Universidad San Francisco Xavier de Chuquisaca  
 
 ---
 
-## 📋 Descripción
+## Descripcion
 
-Sistema de predicción que utiliza **Regresión Logística** para anticipar
-fallos inminentes en servidores a partir de métricas de monitoreo en
-tiempo real (variables continuas).
+Sistema de prediccion que determina si un servidor esta a punto de fallar usando cuatro variables de monitoreo en tiempo real. El modelo aplica **Regresion Logistica** para clasificar el estado del servidor en dos categorias: **Normal** o **Fallo inminente**.
 
-| Variable de entrada | Tipo | Descripción |
+---
+
+## Variables de entrada
+
+| Variable | Descripcion | Rango normal |
 |---|---|---|
-| `temperatura_cpu` | Continua | Temperatura del procesador en °C |
-| `uso_cpu` | Continua | Porcentaje de uso del CPU |
-| `uso_ram` | Continua | Porcentaje de uso de RAM |
-| `paquetes_perdidos` | Continua | % de paquetes de red perdidos |
-| **`fallo`** (salida) | **Categórica** | 0 = Normal, 1 = Fallo inminente |
+| `temperatura_cpu` | Temperatura del procesador en grados Celsius | 30 — 75 C |
+| `uso_cpu` | Porcentaje de uso del procesador | 5 — 70 % |
+| `uso_ram` | Porcentaje de uso de memoria RAM | 10 — 75 % |
+| `paquetes_perdidos` | Porcentaje de paquetes de red perdidos | 0 — 10 % |
 
 ---
 
-## 📁 Estructura del proyecto
+## Fundamento matematico
+
+### Funcion Sigmoide
+
+El modelo convierte la combinacion lineal de variables en una probabilidad usando la funcion sigmoide:
+
+$$\sigma(z) = \frac{1}{1 + e^{-z}}$$
+
+Donde:
+
+$$z = \beta_0 + \beta_1 \cdot x_1 + \beta_2 \cdot x_2 + \beta_3 \cdot x_3 + \beta_4 \cdot x_4$$
+
+### Regla de decision
+
+$$\hat{y} = \begin{cases} 1 & \text{Fallo inminente} \quad \text{si } \sigma(z) \geq 0{,}5 \\ 0 & \text{Normal} \quad \text{si } \sigma(z) < 0{,}5 \end{cases}$$
+
+### Funcion de Costo: Log Loss
+
+$$J(\beta) = -\frac{1}{n} \sum_{i=1}^{n} \left[ y_i \cdot \log(\hat{p}_i) + (1 - y_i) \cdot \log(1 - \hat{p}_i) \right]$$
+
+La funcion Log Loss es convexa, lo que garantiza la existencia de un unico minimo global. Los coeficientes se optimizan mediante el algoritmo **L-BFGS**.
+
+---
+
+## Resultados
+
+| Metrica | Valor |
+|---|---|
+| Precision | 1,00 |
+| Recall | 1,00 |
+| F1-score | 1,00 |
+| AUC-ROC | 1,0000 |
+
+![Resultados](resultados.png)
+
+---
+
+## Coeficientes aprendidos
+
+| Variable | Coeficiente β | Interpretacion |
+|---|---|---|
+| Intercepto β₀ | — | Valor base del modelo |
+| temperatura_cpu | +1,7157 | A mayor temperatura, mayor riesgo |
+| uso_cpu | +1,7345 | Variable mas influyente |
+| uso_ram | +1,6500 | Contribuye significativamente al riesgo |
+| paquetes_perdidos | +1,5800 | Indica problemas de red |
+
+Todos los coeficientes son positivos: cualquier variable que suba aumenta la probabilidad de fallo.
+
+---
+
+## Estructura del proyecto
 
 ```
-servidor_prediccion/
-├── README.md               ← Este archivo
-├── requirements.txt        ← Dependencias Python
-├── generar_dataset.py      ← Genera el dataset simulado (.csv)
-└── modelo.py               ← Entrena, evalúa y realiza inferencias
+Prediccion-de-Fallos-en-Servidores/
+│
+├── modelo.py                              # Entrenamiento, evaluacion e inferencia
+├── generar_dataset.py                     # Generacion del dataset sintetico
+├── dataset_servidores.csv                 # 500 registros (350 normales, 150 fallos)
+├── resultados.png                         # Curva ROC y matriz de confusion
+└── MetodosNumericos_RegresionLogistica.ipynb  # Notebook completo con visualizaciones
 ```
 
 ---
 
-## ⚙️ Requisitos
+## Como ejecutar
 
-- Python 3.8 o superior
-- pip
+### Opcion 1 — Google Colab (recomendado)
 
----
+Abre el notebook directamente en Colab:
 
-## 🚀 Instalación y ejecución
+[![Abrir en Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/riguys123/Prediccion-de-Fallos-en-Servidores-Metodo-Regresion-Logistica/blob/main/MetodosNumericos_RegresionLogistica.ipynb)
 
-### 1. Clonar el repositorio
-
-```bash
-git clone https://github.com/TU_USUARIO/servidor-prediccion.git
-cd servidor-prediccion
-```
-
-### 2. Instalar dependencias
+### Opcion 2 — Local
 
 ```bash
-pip install -r requirements.txt
-```
+# Instalar dependencias
+pip install numpy pandas scikit-learn matplotlib
 
-### 3. Generar el dataset
-
-```bash
+# Generar el dataset
 python generar_dataset.py
-```
 
-Esto crea el archivo `dataset_servidores.csv` con 500 registros simulados.
-
-### 4. Entrenar el modelo y ver resultados
-
-```bash
+# Entrenar y evaluar el modelo
 python modelo.py
 ```
 
-Esto imprime en consola:
-- Coeficientes β del modelo
-- Reporte de clasificación (precisión, recall, F1)
-- AUC-ROC
-- Inferencia con 3 servidores de ejemplo
-
-Y genera el archivo `resultados.png` con:
-- Matriz de confusión
-- Curva ROC
-
 ---
 
-## 📊 Ejemplo de salida esperada
-
-```
-[5] Resultados en conjunto de prueba:
-              precision    recall  f1-score
-
-  Normal (0)       0.97      0.99      0.98
-   Fallo (1)       0.97      0.93      0.95
-
-    AUC-ROC: 0.9950
-
-[7] Inferencia con nuevos servidores:
-  Servidor 1: Temp=58.0°C | CPU=40.0% | RAM=45.0% | Paquetes=1.5%
-    Probabilidad de fallo : 0.32%
-    Predicción            : ✅ Normal
-
-  Servidor 2: Temp=91.0°C | CPU=95.0% | RAM=92.0% | Paquetes=25.0%
-    Probabilidad de fallo : 99.98%
-    Predicción            : ⚠️  FALLO INMINENTE
-```
-
----
-
-## 📐 Base matemática
-
-El modelo aplica la función sigmoide sobre una combinación lineal de las variables:
-
-```
-z = β₀ + β₁·temperatura + β₂·uso_cpu + β₃·uso_ram + β₄·paquetes_perdidos
-
-P(fallo) = 1 / (1 + e^(-z))
-
-Si P(fallo) ≥ 0.5  →  Fallo inminente
-Si P(fallo) < 0.5  →  Normal
-```
-
-Los parámetros β se optimizan minimizando la función de pérdida Log Loss
-mediante gradiente descendente.
-
----
-
-## 📚 Dependencias
-
-Ver `requirements.txt`:
+## Dependencias
 
 ```
 numpy
 pandas
 scikit-learn
 matplotlib
+ipywidgets
 ```
+
+---
+
+## Dataset
+
+El dataset fue generado sinteticamente con distribuciones diferenciadas para cada clase:
+
+| Clase | Registros | Temperatura | CPU | RAM | Paquetes perdidos |
+|---|---|---|---|---|---|
+| Normal (0) | 350 | ~55 C | ~45% | ~50% | ~2% |
+| Fallo (1) | 150 | ~82 C | ~88% | ~85% | ~18% |
+
+---
+
+*Metodos Numericos — Universidad San Francisco Xavier de Chuquisaca*
