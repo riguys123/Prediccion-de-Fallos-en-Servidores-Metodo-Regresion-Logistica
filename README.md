@@ -3,7 +3,7 @@
 
 **Materia:** Metodos Numericos  
 **Universidad:** Universidad San Francisco Xavier de Chuquisaca  
-
+**Estudiante:** Sanchez Galarza Marco Antonio
 ---
 
 ## Descripcion
